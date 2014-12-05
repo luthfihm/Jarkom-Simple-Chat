@@ -86,6 +86,7 @@ void Server::proses(int client_sock)
 				{
 					setChannel(user);
 					sprintf(output, "%d",getChannel(user));
+					loadSavedMsg(user);
 					log(user+" logged in");
 				}
 				else
@@ -372,6 +373,46 @@ void Server::addMsg(Message m)
 		{
 			active_chat[channel].push(m);
 		}
+		else
+		{
+			char filename[50];
+			sprintf(filename,"data_server/saved/%s.txt",m.to.c_str());
+			ofstream fo (filename,ios_base::app | ios_base::out);
+			fo << m.from << endl;
+			fo << m.to << endl;
+			fo << m.time << endl;
+			fo << m.content << endl;
+			fo.close();
+		}
+	}
+}
+
+void Server::loadSavedMsg(string user)
+{
+	int channel = getChannel(user);
+	char filename[50];
+	sprintf(filename,"data_server/saved/%s.txt",user.c_str());
+	ifstream fs (filename);
+	if (fs.is_open())
+	{
+		while (!fs.eof())
+		{
+			Message m;
+			string tmp;
+			getline(fs,tmp);
+			if (!tmp.empty())
+			{
+				m.from = tmp;
+				getline(fs,m.to);
+				getline(fs,m.time);
+				getline(fs,m.content);
+
+				active_chat[channel].push(m);
+			}
+		}
+		fs.close();
+
+		int r = remove(filename);
 	}
 }
 

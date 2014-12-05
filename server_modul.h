@@ -43,6 +43,7 @@ public:
 	bool leaveGroup (string user,string group);
 	bool checkGroup(string group);
 	void addMsg(Message m);
+	void loadSavedMsg(string user);
 	void log(string m);
 	int getChannel(string user);
 	void setChannel(string user);
