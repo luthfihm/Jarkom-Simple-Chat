@@ -69,6 +69,8 @@ void Server::proses(int client_sock)
 		string pass;
 		string group;
 		int channel;
+		Message m;
+		string tmp;
 		switch(opt)
 		{
 			case 0 :
@@ -156,6 +158,40 @@ void Server::proses(int client_sock)
 				else
 				{
 					sprintf(output, "invalid");
+				}
+				break;
+			case 6 :
+				ss >> user;
+				if (checkUser(user)||checkGroup(user))
+				{
+					sprintf(output, "valid");
+				}
+				else
+				{
+					sprintf(output, "invalid");
+				}
+				break;
+			case 7 :
+				getline(ss,tmp);
+				getline(ss,m.from);
+				getline(ss,m.to);
+				getline(ss,m.time);
+				getline(ss,m.content);
+				addMsg(m);
+				log (m.from+" messages "+m.to);
+				sprintf(output, "sent");
+				break;
+			case 8 :
+				ss >> user;
+				channel = getChannel(user);
+				if (active_chat[channel].empty())
+				{
+					sprintf(output, "empty");
+				}
+				else
+				{
+					sprintf(output, "%s\n%s\n%s\n%s",active_chat[channel].front().from.c_str(),active_chat[channel].front().to.c_str(),active_chat[channel].front().time.c_str(),active_chat[channel].front().content.c_str());
+					active_chat[channel].pop();
 				}
 				break;
 			default :
@@ -326,6 +362,19 @@ bool Server::checkGroup(string group)
 		return false;
 	}
 }
+
+void Server::addMsg(Message m)
+{
+	if (checkUser(m.to))
+	{
+		int channel = getChannel(m.to);
+		if (channel != -1)
+		{
+			active_chat[channel].push(m);
+		}
+	}
+}
+
 
 void Server::log(string m)
 {

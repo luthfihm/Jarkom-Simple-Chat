@@ -18,6 +18,8 @@
 #include <fstream>
 #include <ctime>
 #include <ios>
+#include <queue>
+#include "message.h"
 
 using namespace std;
 
@@ -27,6 +29,7 @@ class Server
 {
 private:
 	string active_user[100];
+	queue<Message> active_chat[100];
 public:
 	Server();
 	~Server();
@@ -39,6 +42,7 @@ public:
 	bool joinGroup (string user,string group);
 	bool leaveGroup (string user,string group);
 	bool checkGroup(string group);
+	void addMsg(Message m);
 	void log(string m);
 	int getChannel(string user);
 	void setChannel(string user);

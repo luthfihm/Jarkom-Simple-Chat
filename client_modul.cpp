@@ -55,6 +55,21 @@ void Client::send(data msg,data res)
     close(sock);
 }
 
+string Client::getTime()
+{
+	time_t now = time(0);
+   	struct tm * timeinfo;
+   	stringstream ss;
+   	char dt[30];
+
+   	time (&now);
+  	timeinfo = localtime (&now);
+
+   	strftime (dt,30,"[%F %T]",timeinfo);
+   	ss << dt;
+   	return ss.str();
+}
+
 bool Client::is_logged_in()
 {
 	return (user.compare("") != 0);
@@ -81,6 +96,7 @@ void Client::login()
 		ss >> channel;
 		cout << endl <<"Login success!" << endl << endl;
 		user = name;
+
 	}
 	else
 	{
@@ -169,5 +185,94 @@ void Client::leaveGroup(string group)
 	else
 	{
 		cout << endl << group << " doesn't exist." << endl << endl;
+	}
+}
+
+void Client::sendMsg(string rcv)
+{
+	data input,output;
+	sprintf(input,"%d %s",6,rcv.c_str());
+	send(input,output);
+	if (strcmp(output,"valid")==0)
+	{
+		Message m;
+		cout << "Message :" << endl;
+		getline(cin,m.content);
+		m.from = user;
+		m.to = rcv;
+		m.time = getTime();
+		bzero(input,512);
+		bzero(output,512);
+		sprintf(input,"%d\n%s\n%s\n%s\n%s",7,m.from.c_str(),m.to.c_str(),m.time.c_str(),m.content.c_str());
+		send(input,output);
+		if (strcmp(output,"sent")==0)
+		{
+			cout << endl << "Message sent." << endl << endl;
+		}
+	}
+	else
+	{
+		cout << endl << rcv <<" doesn't exist." << endl << endl;
+	}
+}
+
+void Client::checkMsg()
+{
+	data input,output;
+	sprintf(input,"%d %s",8,user.c_str());
+	send(input,output);
+	if (strcmp(output,"empty")!=0)
+	{
+		do {
+			stringstream ss;
+			ss.str(output);
+			Message m;
+			getline(ss,m.from);
+			getline(ss,m.to);
+			getline(ss,m.time);
+			getline(ss,m.content);
+
+			saveMsg(m);
+
+			bzero(input,512);
+			bzero(output,512);
+			sprintf(input,"%d %s",8,user.c_str());
+			send(input,output);
+		} while (strcmp(output,"empty")!=0);
+	}
+
+	cout << endl << "You have message(s)." << endl << endl;
+}
+
+void Client::saveMsg(Message m)
+{
+	if (m.to.compare(user) == 0)
+	{
+		char filename[30];
+		sprintf(filename,"data_client/%s_%s.txt",user.c_str(),m.from.c_str());
+		ofstream fo (filename,ios_base::app | ios_base::out);
+		fo << m.time << " " << m.from << " : " << m.content << endl;
+		fo.close();
+	}
+}
+
+void Client::showMsg(string from)
+{
+	char filename[30];
+	sprintf(filename,"data_client/%s_%s.txt",user.c_str(),from.c_str());
+	if (ifstream(filename))
+	{
+		ifstream fs (filename);
+		while (!fs.eof())
+		{
+			string s;
+			getline(fs,s);
+			cout << s << endl;
+		}
+		fs.close();
+	}
+	else
+	{
+		cout << endl << "Chat not found!" << endl << endl;
 	}
 }

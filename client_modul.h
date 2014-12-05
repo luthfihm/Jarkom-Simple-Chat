@@ -13,6 +13,10 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <fstream>
+#include <ctime>
+#include <ios>
+#include "message.h"
 
 #define BUFFER_SIZE 512
 
@@ -31,6 +35,7 @@ public:
 
 	int createSocket();
 	void send(data msg,data res);
+	string getTime();
 	bool is_logged_in();
 	string getUser();
 	void login();
@@ -38,6 +43,10 @@ public:
 	void signup();
 	void createGroup(string group);
 	void joinGroup(string group);
+	void sendMsg(string rcv);
+	void checkMsg();
+	void saveMsg(Message m);
+	void showMsg(string from);
 	void leaveGroup(string group);
 };
 #endif

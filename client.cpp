@@ -45,6 +45,7 @@ int main()
         }
         else
         {
+            client.checkMsg();
             cout << "$"<< client.getUser() <<" > ";
             cin.getline(opt,512);
             string query = opt;
@@ -76,6 +77,22 @@ int main()
                 ss >> opt;
                 ss >> group;
                 client.leaveGroup(group);
+            }
+            else if (query.substr(0,query.find(" ")).compare("message") == 0)
+            {
+                string rcv;
+                ss << query;
+                ss >> opt;
+                ss >> rcv;
+                client.sendMsg(rcv);
+            }
+            else if (query.substr(0,query.find(" ")).compare("show") == 0)
+            {
+                string rcv;
+                ss << query;
+                ss >> opt;
+                ss >> rcv;
+                client.showMsg(rcv);
             }
             else
             {
