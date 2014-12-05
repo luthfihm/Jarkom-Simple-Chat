@@ -46,6 +46,9 @@ public:
 	void sendMsg(string rcv);
 	void checkMsg();
 	void saveMsg(Message m);
+	void addUnread(string from);
+	void checkUnread();
+	void markAsRead(string from);
 	void showMsg(string from);
 	void leaveGroup(string group);
 };

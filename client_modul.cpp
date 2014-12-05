@@ -208,6 +208,11 @@ void Client::sendMsg(string rcv)
 		if (strcmp(output,"sent")==0)
 		{
 			cout << endl << "Message sent." << endl << endl;
+			char filename[50];
+			sprintf(filename,"data_client/%s_%s.txt",user.c_str(),m.to.c_str());
+			ofstream fo (filename,ios_base::app | ios_base::out);
+			fo << m.time << " " << user << " : " << m.content << endl;
+			fo.close();
 		}
 	}
 	else
@@ -241,24 +246,53 @@ void Client::checkMsg()
 		} while (strcmp(output,"empty")!=0);
 	}
 
-	cout << endl << "You have message(s)." << endl << endl;
+	checkUnread();
+
 }
 
 void Client::saveMsg(Message m)
 {
 	if (m.to.compare(user) == 0)
 	{
-		char filename[30];
+		char filename[50];
 		sprintf(filename,"data_client/%s_%s.txt",user.c_str(),m.from.c_str());
-		ofstream fo (filename,ios_base::app | ios_base::out);
+		bool exist = false;
+		ifstream fs (filename);
+		stringstream ss;
+		ss << "";
+		if (fs.is_open())
+		{
+			while (!fs.eof())
+			{
+				string tmp;
+				getline(fs,tmp);
+				if (!tmp.empty())
+				{
+					ss << tmp << endl;
+				}
+				if (tmp.compare("----- New Message(s) -----") == 0)
+				{
+					exist = true;
+				}
+			}
+			fs.close();
+		}
+		ofstream fo (filename);
+		fo << ss.str();
+		if (!exist)
+		{
+			fo << "----- New Message(s) -----" << endl;
+		}
 		fo << m.time << " " << m.from << " : " << m.content << endl;
 		fo.close();
+		addUnread(m.from);
 	}
 }
 
 void Client::showMsg(string from)
 {
-	char filename[30];
+	char filename[50];
+	stringstream ss;
 	sprintf(filename,"data_client/%s_%s.txt",user.c_str(),from.c_str());
 	if (ifstream(filename))
 	{
@@ -268,11 +302,141 @@ void Client::showMsg(string from)
 			string s;
 			getline(fs,s);
 			cout << s << endl;
+			if ((s.compare("----- New Message(s) -----") != 0)&&(!s.empty()))
+			{
+				ss << s << endl;
+			}
 		}
 		fs.close();
+		ofstream fo (filename);
+		fo << ss.str();
+		fo.close();
+		markAsRead(from);
 	}
 	else
 	{
 		cout << endl << "Chat not found!" << endl << endl;
+	}
+}
+
+void Client::addUnread(string from)
+{
+	char filename[50];
+	sprintf(filename,"data_client/%s_unread.txt",user.c_str());
+	if (ifstream(filename))
+	{
+		bool exist = false;
+		ifstream fs (filename);
+		while ((!fs.eof())&&(!exist))
+		{
+			string rcv;
+			fs >> rcv;
+			if ((from.compare(rcv) == 0))
+			{
+				exist = true;
+			}
+		}
+		fs.close();
+		if (!exist)
+		{
+			ofstream fo (filename,ios_base::app | ios_base::out);
+			fo << endl << from;
+			fo.close();
+		}
+	}
+	else
+	{
+		ofstream fo (filename);
+		fo << from ;
+		fo.close();
+	}
+}
+
+void Client::checkUnread()
+{
+	char filename[50];
+	sprintf(filename,"data_client/%s_unread.txt",user.c_str());
+	if (ifstream(filename))
+	{
+		ifstream fs (filename);
+		int n = 0;
+		stringstream ss;
+		while(!fs.eof())
+		{
+			string tmp;
+			fs >> tmp;
+			ss << tmp << endl;
+			n++;
+		}
+		fs.close();
+		cout << endl << "New message(s) from ";
+		if (n > 1)
+		{
+			string tmp;
+			ss >> tmp;
+			cout << tmp;
+			for (int i=2;i<=n;i++)
+			{
+				ss >> tmp;
+				if (i==n)
+				{
+					cout << " and " << tmp << "." << endl << endl;
+				}
+				else if (i == 2)
+				{
+					cout << ", " << tmp << ",";
+				}
+				else
+				{
+					cout << " " << tmp << ",";	
+				}
+			}
+		}
+		else
+		{
+			string tmp;
+			ss >> tmp;
+			cout << tmp << "." << endl << endl;
+		}
+	}
+}
+
+void Client::markAsRead(string from)
+{
+	char filename[50];
+	sprintf(filename,"data_client/%s_unread.txt",user.c_str());
+	ifstream fs (filename);
+	stringstream ss;
+	int n = 0;
+	if (fs.is_open())
+	{
+		while(!fs.eof())
+		{
+			string s;
+			fs >> s;
+			if (s.compare(from) != 0)
+			{
+				if (n > 0)
+				{
+					ss << endl << s;
+				}
+				else
+				{
+					ss << s;
+				}
+				n++;
+			}
+		}
+
+		if (n > 0)
+		{
+			ofstream fo (filename);
+			fo << ss.str() ;
+			fo.close();
+		}
+		else
+		{
+			int r = remove(filename);
+		}
 	}
 }
