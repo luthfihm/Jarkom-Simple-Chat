@@ -191,7 +191,7 @@ void Client::leaveGroup(string group)
 void Client::sendMsg(string rcv)
 {
 	data input,output;
-	sprintf(input,"%d %s",6,rcv.c_str());
+	sprintf(input,"%d %s %s",6,user.c_str(),rcv.c_str());
 	send(input,output);
 	if (strcmp(output,"valid")==0)
 	{
@@ -214,6 +214,10 @@ void Client::sendMsg(string rcv)
 			fo << m.time << " " << user << " : " << m.content << endl;
 			fo.close();
 		}
+	}
+	else if (strcmp(output,"notmember")==0)
+	{
+		cout << endl << "You aren't member of "<< rcv <<"." << endl << endl;
 	}
 	else
 	{
@@ -286,6 +290,41 @@ void Client::saveMsg(Message m)
 		fo << m.time << " " << m.from << " : " << m.content << endl;
 		fo.close();
 		addUnread(m.from);
+	}
+	else
+	{
+		char filename[50];
+		sprintf(filename,"data_client/%s_%s.txt",user.c_str(),m.to.c_str());
+		bool exist = false;
+		ifstream fs (filename);
+		stringstream ss;
+		ss << "";
+		if (fs.is_open())
+		{
+			while (!fs.eof())
+			{
+				string tmp;
+				getline(fs,tmp);
+				if (!tmp.empty())
+				{
+					ss << tmp << endl;
+				}
+				if (tmp.compare("----- New Message(s) -----") == 0)
+				{
+					exist = true;
+				}
+			}
+			fs.close();
+		}
+		ofstream fo (filename);
+		fo << ss.str();
+		if (!exist)
+		{
+			fo << "----- New Message(s) -----" << endl;
+		}
+		fo << m.time << " " << m.from << " : " << m.content << endl;
+		fo.close();
+		addUnread(m.to);
 	}
 }
 

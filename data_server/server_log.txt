@@ -1,0 +1,10 @@
+[2014-12-05 15:44:14] Server starts
+[2014-12-05 15:44:37] luthfi logged in
+[2014-12-05 15:45:33] luthfi left kita
+[2014-12-05 15:45:52] luthfi messages upix
+[2014-12-05 15:46:09] luthfi messages sabi
+[2014-12-05 15:46:34] luthfi logged out
+[2014-12-05 15:46:59] daniar logged in
+[2014-12-05 15:47:20] daniar logged out
+[2014-12-05 15:47:29] upix logged in
+[2014-12-05 15:47:53] upix logged out

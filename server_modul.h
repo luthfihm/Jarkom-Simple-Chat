@@ -42,6 +42,7 @@ public:
 	bool joinGroup (string user,string group);
 	bool leaveGroup (string user,string group);
 	bool checkGroup(string group);
+	bool isMember(string user,string group);
 	void addMsg(Message m);
 	void loadSavedMsg(string user);
 	void log(string m);

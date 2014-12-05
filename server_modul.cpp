@@ -163,9 +163,21 @@ void Server::proses(int client_sock)
 				break;
 			case 6 :
 				ss >> user;
-				if (checkUser(user)||checkGroup(user))
+				ss >> group;
+				if (checkUser(group))
 				{
 					sprintf(output, "valid");
+				}
+				else if(checkGroup(group))
+				{
+					if (isMember(user,group))
+					{
+						sprintf(output, "valid");
+					}
+					else
+					{
+						sprintf(output, "notmember");
+					}
 				}
 				else
 				{
@@ -364,6 +376,25 @@ bool Server::checkGroup(string group)
 	}
 }
 
+bool Server::isMember(string user,string group)
+{
+	char filename[30];
+	sprintf(filename,"data_server/group/%s.txt",group.c_str());
+	ifstream fs (filename);
+	bool exist = false;
+	while ((!fs.eof())&&(!exist))
+	{
+		string username;
+		fs >> username;
+		if ((user.compare(username) == 0))
+		{
+			exist = true;
+		}
+	}
+	fs.close();
+	return exist;
+}
+
 void Server::addMsg(Message m)
 {
 	if (checkUser(m.to))
@@ -383,6 +414,36 @@ void Server::addMsg(Message m)
 			fo << m.time << endl;
 			fo << m.content << endl;
 			fo.close();
+		}
+	}
+	else if (checkGroup(m.to))
+	{
+		char groupfile[30];
+		sprintf(groupfile,"data_server/group/%s.txt",m.to.c_str());
+		ifstream fs (groupfile);
+		while (!fs.eof())
+		{
+			string user;
+			fs >> user;
+			if (user.compare(m.from) != 0)
+			{
+				int channel = getChannel(user);
+				if (channel != -1)
+				{
+					active_chat[channel].push(m);
+				}
+				else
+				{
+					char filename[50];
+					sprintf(filename,"data_server/saved/%s.txt",user.c_str());
+					ofstream fo (filename,ios_base::app | ios_base::out);
+					fo << m.from << endl;
+					fo << m.to << endl;
+					fo << m.time << endl;
+					fo << m.content << endl;
+					fo.close();
+				}
+			}
 		}
 	}
 }
@@ -428,7 +489,13 @@ void Server::log(string m)
   	timeinfo = localtime (&now);
 
    	strftime (dt,30,"%F %T",timeinfo);
+
+   	char filename[50];
+	sprintf(filename,"data_server/server_log.txt");
+	ofstream fo (filename,ios_base::app | ios_base::out);
+	fo << "[" << dt <<"] " << m << endl;
 	cout << "[" << dt <<"] " << m << endl;
+	fo.close();
 }
 
 int Server::getChannel(string user)
