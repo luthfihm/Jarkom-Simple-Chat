@@ -16,6 +16,8 @@
 #include <fstream>
 #include <ctime>
 #include <ios>
+#include <chrono>
+#include <thread>
 #include "message.h"
 
 #define BUFFER_SIZE 512
@@ -50,6 +52,7 @@ public:
 	void checkUnread();
 	void markAsRead(string from);
 	void showMsg(string from);
+	bool newMsg();
 	void leaveGroup(string group);
 };
 #endif

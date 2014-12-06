@@ -11,7 +11,6 @@ Server::~Server()
 void Server::start()
 {
 	int sock, client_sock;
-	char buffer[150];
 	socklen_t clilen;
 	struct sockaddr_in serv_addr, cli_addr;
 	int port = 9000, len, n;
@@ -50,7 +49,10 @@ void Server::start()
 		clilen = sizeof(cli_addr);
 		client_sock = accept(sock, (struct sockaddr *) &cli_addr, &clilen);
 		
-		proses(client_sock);
+		//proses(client_sock);
+		thread t (&Server::proses,this,client_sock);
+
+		t.detach();
 	}
 	close(sock);
 }
@@ -213,9 +215,10 @@ void Server::proses(int client_sock)
 		}
 		write(client_sock,output,512); // tulis ke klien
 	}
-	
 	// tutup koneksi klien
 	close(client_sock);
+	std::chrono::milliseconds dura( 50 );
+    std::this_thread::sleep_for( dura );
 }
 
 bool Server::login (string user,string pass)

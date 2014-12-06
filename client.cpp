@@ -16,11 +16,16 @@
 #include "client_modul.h"
 using namespace std;
 
+Client client;
+
+void checkMsg();
+
 int main()
 {
-    Client client;
     char opt[512];
     bool quit = false;
+    thread t (checkMsg);
+    t.detach();
     do {
         if (!client.is_logged_in())
         {
@@ -45,7 +50,12 @@ int main()
         }
         else
         {
-            client.checkMsg();
+            std::chrono::milliseconds dura( 200 );
+            std::this_thread::sleep_for( dura );
+            if (client.newMsg())
+            {
+                client.checkUnread();
+            }
             cout << "$"<< client.getUser() <<" > ";
             cin.getline(opt,512);
             string query = opt;
@@ -101,4 +111,17 @@ int main()
         }
     } while (!quit);
     return 0;
+}
+
+void checkMsg()
+{
+    while (1)
+    {
+        if (client.is_logged_in())
+        {
+            client.checkMsg();
+        }
+        std::chrono::milliseconds dura( 100 );
+        std::this_thread::sleep_for( dura );
+    }
 }

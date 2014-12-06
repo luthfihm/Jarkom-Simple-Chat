@@ -247,11 +247,9 @@ void Client::checkMsg()
 			bzero(output,512);
 			sprintf(input,"%d %s",8,user.c_str());
 			send(input,output);
+			
 		} while (strcmp(output,"empty")!=0);
 	}
-
-	checkUnread();
-
 }
 
 void Client::saveMsg(Message m)
@@ -477,5 +475,19 @@ void Client::markAsRead(string from)
 		{
 			int r = remove(filename);
 		}
+	}
+}
+
+bool Client::newMsg()
+{
+	char filename[50];
+	sprintf(filename,"data_client/%s_unread.txt",user.c_str());
+	if (ifstream (filename))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }
